@@ -1,0 +1,1 @@
+# hive-metastore-api-test
