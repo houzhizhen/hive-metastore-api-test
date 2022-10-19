@@ -37,7 +37,12 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
         }
     }
 
-    private void createDatabase(String dbName) throws TException {
+    /**
+     * Create database always with location even if there is no location in create database sql statemetn.
+     * @param dbName
+     * @throws TException
+     */
+    protected void createDatabase(String dbName) throws TException {
         String location = this.catalogLocation + "/" + dbName + ".db";
         String ownerName = "houzhizhen";
         Database database = new Database();
@@ -90,11 +95,11 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
         Assert.assertEquals(location, db.getLocationUri());
     }
 
-    private void dropDatabase(String dbName, boolean ifExists) {
+    protected void dropDatabase(String dbName, boolean ignoreUnknownDb) {
         try {
-            this.client.dropDatabase(dbName);
+            this.client.dropDatabase(dbName, true, ignoreUnknownDb, true);
         } catch (TException e) {
-            if (!ifExists) {
+            if (!ignoreUnknownDb) {
                 throw new RuntimeException(e);
             }
         }

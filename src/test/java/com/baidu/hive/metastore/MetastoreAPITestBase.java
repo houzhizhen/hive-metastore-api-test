@@ -5,18 +5,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.tez.common.Preconditions;
 import org.junit.After;
 import org.junit.Before;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MetastoreAPITestBase {
-
-    protected static String CATALOG_LOCATION_KEY="hive.catalog.location";
-    protected static String CATALOG_LOCATION_DEFAULT = "hdfs://localhost:9000/user/hive/warehouse";
 
     protected String catalogLocation;
 
@@ -25,7 +24,7 @@ public class MetastoreAPITestBase {
 
     @Before
     public void init() throws MetaException {
-        this.conf = MetastoreConf.newMetastoreConf();;
+        this.conf = MetastoreConf.newMetastoreConf();
         // Disable txn
         this.conf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
                 "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
@@ -33,7 +32,14 @@ public class MetastoreAPITestBase {
                 HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.defaultBoolVal);
         logParameter(conf, HiveConf.ConfVars.HIVE_TXN_MANAGER.varname);
         logParameter(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname);
-        this.catalogLocation = this.conf.get(CATALOG_LOCATION_KEY, CATALOG_LOCATION_DEFAULT);
+        this.catalogLocation = conf.get("hive.metastore.warehouse.dir");
+        if (catalogLocation.startsWith("/")) {
+            String defaultFS = conf.get("fs.defaultFS");
+            if (defaultFS.endsWith("/")) {
+                defaultFS = defaultFS.substring(0, defaultFS.length() - 1);
+            }
+            this.catalogLocation = defaultFS  + catalogLocation;
+        }
         this.client = MetaStoreUtil.createMetaStoreClient(this.conf);
     }
 
@@ -65,5 +71,17 @@ public class MetastoreAPITestBase {
 
     public static String generateDescription() {
         return "fixed description";
+    }
+
+
+    public static Map<String, String> newMap(String... keyValuesPairs) {
+        Preconditions.checkArgument(keyValuesPairs.length %2 == 0,
+                "keyValuesPairs:" + Arrays.toString(keyValuesPairs) + ".length is not even");
+
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < keyValuesPairs.length; i += 2) {
+            map.put(keyValuesPairs[i], keyValuesPairs[i+1]);
+        }
+        return map;
     }
 }
