@@ -1,5 +1,6 @@
 package com.baidu.hive.metastore;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.thrift.TException;
@@ -35,6 +36,25 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
         for (String dbName: dbArray) {
             dropDatabase(dbName, false);
         }
+        log("testDatabase success");
+    }
+
+
+    @Test
+    public void testOthers() {
+        // testIsCompatibleWith();
+        testFlushCache();
+    }
+
+    private void testIsCompatibleWith() {
+        boolean isCompatibleWith = this.client.isCompatibleWith(this.conf);
+        Assert.assertTrue(isCompatibleWith);
+        boolean isCompatibleWith2 = this.client.isCompatibleWith(new HiveConf());
+        Assert.assertFalse(isCompatibleWith2);
+    }
+
+    private void testFlushCache() {
+        this.client.flushCache();
     }
 
     /**

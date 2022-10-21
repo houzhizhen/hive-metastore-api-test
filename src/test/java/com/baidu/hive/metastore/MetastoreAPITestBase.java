@@ -5,6 +5,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.tez.common.Preconditions;
 import org.junit.After;
 import org.junit.Before;
@@ -19,12 +20,12 @@ public class MetastoreAPITestBase {
 
     protected String catalogLocation;
 
-    protected Configuration conf;
+    protected HiveConf conf;
     protected IMetaStoreClient client;
 
     @Before
-    public void init() throws MetaException {
-        this.conf = MetastoreConf.newMetastoreConf();
+    public void init() throws MetaException, HiveException {
+        this.conf = new HiveConf();
         // Disable txn
         this.conf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
                 "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
@@ -40,7 +41,7 @@ public class MetastoreAPITestBase {
             }
             this.catalogLocation = defaultFS  + catalogLocation;
         }
-        this.client = MetaStoreUtil.createMetaStoreClient(this.conf);
+        this.client = MetaStoreUtil.createMetaStoreClient(conf);
     }
 
     @After
