@@ -14,7 +14,7 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
     @Test
     public void testTable() throws TException {
-
+        log("begin testTable");
         // default database
         dropTable("default", "t1", true);
         createTableWithVariousColumnType("default", "t1", 1);
@@ -35,6 +35,7 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         testAlterColumns(dbName);
         // TODO: testExteranlTable(dbName);
         dropDatabase(dbName, false);
+        log("end testTable");
     }
 
     /**

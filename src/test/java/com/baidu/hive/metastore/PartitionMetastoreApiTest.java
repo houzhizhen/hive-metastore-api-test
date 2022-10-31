@@ -12,6 +12,7 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
 
     @Test
     public void testPartitionTable() throws TException {
+        log("begin testPartitionTable");
         String dbName = "partition_test";
         dropDatabase(dbName, true);
         createDatabase(dbName);
@@ -20,6 +21,7 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
 
         testShowPartitons(table, 2, 100);
         this.dropDatabase(dbName, false);
+        log("end testPartitionTable");
     }
 
     private void testShowPartitons(Table table, int partitionColumnCount, int partitionCount) throws TException {

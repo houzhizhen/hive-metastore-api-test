@@ -14,6 +14,7 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
     @Test
     public void testDatabase() throws TException {
+        log("begin testDatabase");
         String[] dbArray = new String[] {"meta_test11", "meta_test12"};
 
         for (int i = 0; i < dbArray.length; i++) {
@@ -36,14 +37,16 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
         for (String dbName: dbArray) {
             dropDatabase(dbName, false);
         }
-        log("testDatabase success");
+        log("end testDatabase");
     }
 
 
     @Test
     public void testOthers() {
+        log("begin testOthers");
         // testIsCompatibleWith();
         testFlushCache();
+        log("end testOthers");
     }
 
     private void testIsCompatibleWith() {
@@ -117,7 +120,7 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
     protected void dropDatabase(String dbName, boolean ignoreUnknownDb) {
         try {
-            this.client.dropDatabase(dbName, true, ignoreUnknownDb, true);
+            this.client.dropDatabase(dbName, false, ignoreUnknownDb, true);
         } catch (TException e) {
             if (!ignoreUnknownDb) {
                 throw new RuntimeException(e);
