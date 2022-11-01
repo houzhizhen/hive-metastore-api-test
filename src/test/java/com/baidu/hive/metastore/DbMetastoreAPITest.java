@@ -3,6 +3,7 @@ package com.baidu.hive.metastore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hive.com.esotericsoftware.minlog.Log;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,6 +68,7 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
      */
     protected void createDatabase(String dbName) throws TException {
         String location = this.catalogLocation + "/" + dbName + ".db";
+        log("create database location " + location);
         String ownerName = "houzhizhen";
         Database database = new Database();
         database.setName(dbName);
@@ -120,7 +122,7 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
     protected void dropDatabase(String dbName, boolean ignoreUnknownDb) {
         try {
-            this.client.dropDatabase(dbName, false, ignoreUnknownDb, true);
+            this.client.dropDatabase(dbName, true, ignoreUnknownDb, true);
         } catch (TException e) {
             if (!ignoreUnknownDb) {
                 throw new RuntimeException(e);

@@ -1,6 +1,8 @@
 package com.baidu.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -10,6 +12,10 @@ import org.apache.tez.common.Preconditions;
 import org.junit.After;
 import org.junit.Before;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -25,14 +31,27 @@ public class MetastoreAPITestBase {
 
     @Before
     public void init() throws MetaException, HiveException {
+
         this.conf = new HiveConf();
         // Disable txn
+        this.conf.set("hive.execution.engine", "mr");
         this.conf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
                 "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
         MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY,
                 HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.defaultBoolVal);
         logParameter(conf, HiveConf.ConfVars.HIVE_TXN_MANAGER.varname);
         logParameter(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname);
+
+        CliSessionState ss = new CliSessionState(conf);
+        ss.in = System.in;
+        try {
+            ss.out = new PrintStream(System.out, true, "UTF-8");
+            ss.info = new PrintStream(System.err, true, "UTF-8");
+            ss.err = new CachingPrintStream(System.err, true, "UTF-8");
+        } catch (UnsupportedEncodingException | FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        CliSessionState.start(ss);
         this.catalogLocation = conf.get("hive.metastore.warehouse.dir");
         if (catalogLocation.startsWith("/")) {
             String defaultFS = conf.get("fs.defaultFS");
@@ -47,6 +66,11 @@ public class MetastoreAPITestBase {
     @After
     public void close() {
         this.client.close();
+        try {
+            CliSessionState.get().close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         log("MetaStoreApiTest closed");
     }
 
