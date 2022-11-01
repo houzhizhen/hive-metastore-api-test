@@ -134,37 +134,4 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
         this.checkTable(table, dbName, tbName);
         return table;
     }
-
-    public static void main(String[] args) {
-        PartitionMetastoreApiTest test = new PartitionMetastoreApiTest();
-        try {
-            test.init();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        try {
-            test.testDatabase();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        try {
-            test.testOthers();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        try {
-            test.testTable();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        try {
-            test.testPartitionTable();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        test.close();
-    }
 }
