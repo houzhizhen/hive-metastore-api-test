@@ -2,6 +2,7 @@ package com.baidu.hive.metastore;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.thrift.TException;
@@ -37,30 +38,6 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         log("end testTable");
     }
 
-    /**
-     * metastore_test,
-     * t100,
-     * Table(tableName:t1, dbName:metastore_test, owner:houzhizhen, createTime:1666151554,
-     *       lastAccessTime:0, retention:0,
-     *       sd:StorageDescriptor(cols:[FieldSchema(name:c1, type:string, comment:null)], l
-     *          ocation:hdfs://localhost:9000/home/disk1/hive/hive-313/metastore_test.db/t100,
-     *          inputFormat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat,
-     *          outputFormat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat,
-     *          compressed:false, numBuckets:-1,
-     *          serdeInfo:SerDeInfo(name:null,
-     *            serializationLib:org.apache.hadoop.hive.ql.io.orc.OrcSerde,
-     *            parameters:{serialization.format=1}),
-     *          bucketCols:[], sortCols:[], parameters:{},
-     *          skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[],
-     *            skewedColValueLocationMaps:{}), storedAsSubDirectories:false),
-     *          partitionKeys:[], parameters:{last_modified_time=1666255919, totalSize=0,
-     *          numRows=0, rawDataSize=0,
-     *          COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"c1":"true"}},
-     *          numFiles=0, bucketing_version=2, last_modified_by=houzhizhen},
-     *          viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE,
-     *          rewriteEnabled:false, catName:hive, ownerType:USER),
-     *          EnvironmentContext(properties:{DO_NOT_UPDATE_STATS=true, alterTableOpType=RENAME})
-     */
     protected void testAlterTable(String dbName) throws TException {
         String originalTableName = "original_name";
         String renamedTableName = "renamed_name";
@@ -76,18 +53,26 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         checkLocation(renamedTable);
     }
 
-    /**
-     *
-     * Arguments:[
-     * metastore_test,
-     * tab_change_columns,
-     * Table(tableName:tab_change_columns,
-     * dbName:metastore_test, owner:houzhizhen,
-     * createTime:1666258863, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c3_c, type:int, comment:null), FieldSchema(name:c1, type:int, comment:null), FieldSchema(name:c2, type:int, comment:null)], location:hdfs://localhost:9000/home/disk1/hive/hive-313/metastore_test.db/tab_change_columns, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{}), storedAsSubDirectories:false), partitionKeys:[], parameters:{totalSize=0, last_modified_time=1666258866, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"c1":"true","c2":"true","c3":"true"}}, numFiles=0, bucketing_version=2, last_modified_by=houzhizhen}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE, rewriteEnabled:false, catName:hive, ownerType:USER),
-     * EnvironmentContext(properties:{DO_NOT_UPDATE_STATS=true, alterTableOpType=RENAMECOLUMN})]
-     * @param dbName
-     * @throws TException
-     */
+    protected List<FieldSchema> genCols(int columnCount) {
+        List<FieldSchema> cols = new ArrayList<>();
+        for (int i = 0; i < columnCount; i++) {
+            FieldSchema field = new FieldSchema();
+            ColType colType = types.get(i % types.size());
+            field.setName("c" + i);
+            StringBuilder typeName = new StringBuilder(colType.typeName);
+            if (colType.hasPrecision) {
+                typeName.append("(").append(colType.precision);
+                if (colType.hasScale) {
+                    typeName.append(",").append(colType.scale);
+                }
+                typeName.append(")");
+            }
+            field.setType(typeName.toString());
+            cols.add(field);
+        }
+        return cols;
+    }
+    
     public void testAlterColumns(String dbName) throws TException {
         String tableName = "tab_change_columns";
         this.dropTable(dbName, tableName, true);
@@ -118,13 +103,15 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
     public void testShowTables(String dbName) throws TException {
         for (int i = 1; i <= types.size(); i++) {
-            log("column count:" + i);
             createTableWithVariousColumnType(dbName, "t2_" + i, i);
         }
         List<String> tables = client.getTables(dbName, "t2_*");
         assertEquals(types.size(), tables.size());
         for (int i = 1; i <= types.size(); i++) {
             assertTrue(tables.contains("t2_" + i));
+        }
+        for (int i = 1; i <= types.size(); i++) {
+            dropTable(dbName, "t2_" + i, false);
         }
     }
 
@@ -217,25 +204,8 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
     protected void createTableWithVariousColumnType(String dbName, String tbName, int columnCount) throws TException {
         Table table = this.createTableObject(dbName, tbName, columnCount);
-        List<FieldSchema> cols = new ArrayList<>();
 
-        for (int i = 0; i < columnCount; i++) {
-            FieldSchema field = new FieldSchema();
-            ColType colType = types.get(i % types.size());
-            field.setName("c" + i);
-            StringBuilder typeName = new StringBuilder(colType.typeName);
-            if (colType.hasPrecision) {
-                typeName.append("(").append(colType.precision);
-                if (colType.hasScale) {
-                    typeName.append(",").append(colType.scale);
-                }
-                typeName.append(")");
-            }
-            field.setType(typeName.toString());
-            cols.add(field);
-        }
-
-        table.getSd().setCols(cols);
+        table.getSd().setCols(genCols(columnCount));
         client.createTable(table);
         checkTable(table, dbName, tbName);
     }
@@ -254,7 +224,6 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
         for (int i = 0; i < columnCount; i++) {
             FieldSchema field = new FieldSchema();
-
             field.setName("c" + i);
             field.setType("int");
             cols.add(field);
@@ -358,7 +327,11 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         Map<String, String> table2Parameters = table2.getParameters();
         table2Parameters.remove("transient_lastDdlTime");
         table2Parameters.remove("last_modified_time");
-        assertEquals(table.getParameters(), table2Parameters);
+
+        Map<String, String> tableParameters = table.getParameters();
+        tableParameters.remove("transient_lastDdlTime");
+        tableParameters.remove("last_modified_time");
+        assertEquals(tableParameters, table2Parameters);
         PrincipalPrivilegeSet privilegeSet2 = table2.getPrivileges();
         // TODO: table2.getPrivileges() == null, not checked
         // assertEquals(table.getPrivileges(), privilegeSet2);
@@ -367,9 +340,17 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         System.out.println("table2.getCatName():" + table2.getCatName());
         // assertEquals(table.getCatName(), table2.getCatName());
         assertEquals(table.getOwnerType(), table2.getOwnerType());
+        assertEquals(table.getTableType(), table2.getTableType());
+        if (table.getTableType().equals(TableType.VIRTUAL_VIEW)) {
+            assertEquals(table.getViewOriginalText(), table2.getViewOriginalText());
+            assertEquals(table.getViewExpandedText(), table2.getViewExpandedText());
+        }
     }
 
     protected void checkLocation(Table table) {
+        if (table.getTableType().equals(TableType.VIRTUAL_VIEW.name())) {
+            return;
+        }
         String location = table.getSd().getLocation();
         String expectedLocation;
         if ("default".equals(table.getDbName())) {
