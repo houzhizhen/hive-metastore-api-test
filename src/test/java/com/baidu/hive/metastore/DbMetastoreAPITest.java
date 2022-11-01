@@ -3,9 +3,7 @@ package com.baidu.hive.metastore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hive.com.esotericsoftware.minlog.Log;
 import org.apache.thrift.TException;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -52,9 +50,9 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
     private void testIsCompatibleWith() {
         boolean isCompatibleWith = this.client.isCompatibleWith(this.conf);
-        Assert.assertTrue(isCompatibleWith);
+        assertTrue(isCompatibleWith);
         boolean isCompatibleWith2 = this.client.isCompatibleWith(new HiveConf());
-        Assert.assertFalse(isCompatibleWith2);
+        assertFalse(isCompatibleWith2);
     }
 
     private void testFlushCache() {
@@ -63,8 +61,8 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
     /**
      * Create database always with location even if there is no location in create database sql statemetn.
-     * @param dbName
-     * @throws TException
+     * @param dbName the database name
+     * @throws TException if metastore has exception
      */
     protected void createDatabase(String dbName) throws TException {
         String location = this.catalogLocation + "/" + dbName + ".db";
@@ -81,13 +79,13 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
         Database db = this.client.getDatabase(dbName);
 
-        Assert.assertEquals(dbName, db.getName());
-        Assert.assertNull(db.getDescription());
-        Assert.assertEquals(location, db.getLocationUri());
-        Assert.assertTrue(db.getParameters().isEmpty());
-        Assert.assertEquals(location, db.getLocationUri());
-        Assert.assertEquals(ownerName, db.getOwnerName());
-        Assert.assertEquals(PrincipalType.USER, db.getOwnerType());
+        assertEquals(dbName, db.getName());
+        assertNull(db.getDescription());
+        assertEquals(location, db.getLocationUri());
+        assertTrue(db.getParameters().isEmpty());
+        assertEquals(location, db.getLocationUri());
+        assertEquals(ownerName, db.getOwnerName());
+        assertEquals(PrincipalType.USER, db.getOwnerType());
     }
 
     /**
@@ -108,16 +106,16 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
         Database db = this.client.getDatabase(dbName);
 
-        Assert.assertEquals(dbName, db.getName());
-        Assert.assertEquals(desc, db.getDescription());
-        Assert.assertEquals(location, db.getLocationUri());
-        Assert.assertEquals(parameters, db.getParameters());
-        Assert.assertEquals(location, db.getLocationUri());
-        Assert.assertEquals(ownerName, db.getOwnerName());
-        Assert.assertEquals(PrincipalType.USER, db.getOwnerType());
+        assertEquals(dbName, db.getName());
+        assertEquals(desc, db.getDescription());
+        assertEquals(location, db.getLocationUri());
+        assertEquals(parameters, db.getParameters());
+        assertEquals(location, db.getLocationUri());
+        assertEquals(ownerName, db.getOwnerName());
+        assertEquals(PrincipalType.USER, db.getOwnerType());
 
-        Assert.assertEquals(desc, db.getDescription());
-        Assert.assertEquals(location, db.getLocationUri());
+        assertEquals(desc, db.getDescription());
+        assertEquals(location, db.getLocationUri());
     }
 
     protected void dropDatabase(String dbName, boolean ignoreUnknownDb) {
@@ -133,7 +131,7 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
     private void showDatabases(String[] dbArray) throws TException {
         List<String> dbs = this.client.getAllDatabases();
         for (String dbName : dbArray) {
-            Assert.assertTrue(dbs.contains(dbName));
+            assertTrue(dbs.contains(dbName));
         }
     }
 }

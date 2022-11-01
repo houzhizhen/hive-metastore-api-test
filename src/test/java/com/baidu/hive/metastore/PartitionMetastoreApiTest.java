@@ -1,9 +1,7 @@
 package com.baidu.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.thrift.TException;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
@@ -27,7 +25,7 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
     private void testShowPartitons(Table table, int partitionColumnCount, int partitionCount) throws TException {
         // List all partitons -- Arguments:[partition_test, ptable, -1]
         List<Partition> allPartitions = this.client.listPartitions(table.getDbName(), table.getTableName(), (short) -1);
-        Assert.assertEquals(partitionCount, allPartitions.size());
+        assertEquals(partitionCount, allPartitions.size());
 
         // List partitions with specified first partition column.
         int pk1Count = Math.min(10, partitionCount);
@@ -41,7 +39,7 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
             pk1Pattern.add("pc0" + i);
             List<Partition> pk1Partitions = this.client.listPartitions(table.getDbName(),
                     table.getTableName(), pk1Pattern, (short) -1);
-            Assert.assertEquals(expectedPartitionCount, pk1Partitions.size());
+            assertEquals(expectedPartitionCount, pk1Partitions.size());
         }
 
         // List partition with all partition column specified.
@@ -58,7 +56,7 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
             }
             List<Partition> partitions = this.client.listPartitions(table.getDbName(),
                     table.getTableName(), values, (short) -1);
-            Assert.assertEquals(1, partitions.size());
+            assertEquals(1, partitions.size());
         }
     }
 
@@ -108,7 +106,7 @@ public class PartitionMetastoreApiTest extends TableMetastoreAPITest {
             sb.deleteCharAt(sb.length() - 1);
         }
         List<FieldSchema> fieldSchemas = table.getPartitionKeys();
-        Assert.assertEquals(fieldSchemas.size(), values.size());
+        assertEquals(fieldSchemas.size(), values.size());
         for (int i = 0; i < fieldSchemas.size(); i++) {
             FieldSchema field = fieldSchemas.get(i);
 

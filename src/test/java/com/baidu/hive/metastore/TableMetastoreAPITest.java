@@ -5,7 +5,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.thrift.TException;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
@@ -113,7 +112,7 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
         // Verify
         Table newTable = this.client.getTable(dbName,tableName);
-        Assert.assertEquals(newCols, newTable.getSd().getCols());
+        assertEquals(newCols, newTable.getSd().getCols());
         this.dropTable(dbName, tableName, false);
     }
 
@@ -123,9 +122,9 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
             createTableWithVariousColumnType(dbName, "t2_" + i, i);
         }
         List<String> tables = client.getTables(dbName, "t2_*");
-        Assert.assertEquals(types.size(), tables.size());
+        assertEquals(types.size(), tables.size());
         for (int i = 1; i <= types.size(); i++) {
-            Assert.assertTrue(tables.contains("t2_" + i));
+            assertTrue(tables.contains("t2_" + i));
         }
     }
 
@@ -343,31 +342,31 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
     protected void checkTable(Table table, String dbName, String tbName) throws TException {
         Table table2 = client.getTable(dbName, tbName);
 
-        Assert.assertEquals(table.getTableName(), table2.getTableName());
-        Assert.assertEquals(table.getDbName(), table2.getDbName());
-        Assert.assertEquals(table.getOwner(), table2.getOwner());
-        // Assert.assertEquals(table.getCreateTime(), table2.getCreateTime());
-        Assert.assertEquals(table.getLastAccessTime(), table2.getLastAccessTime());
-        Assert.assertEquals(table.getRetention(), table2.getRetention());
+        assertEquals(table.getTableName(), table2.getTableName());
+        assertEquals(table.getDbName(), table2.getDbName());
+        assertEquals(table.getOwner(), table2.getOwner());
+        // assertEquals(table.getCreateTime(), table2.getCreateTime());
+        assertEquals(table.getLastAccessTime(), table2.getLastAccessTime());
+        assertEquals(table.getRetention(), table2.getRetention());
         StorageDescriptor sd = table.getSd();
         StorageDescriptor sd2 = table2.getSd();
-        Assert.assertEquals(sd.getCols(), sd2.getCols());
+        assertEquals(sd.getCols(), sd2.getCols());
         checkLocation(table2);
         sd2.setLocation(null);
-        Assert.assertEquals(sd.getCols(), sd2.getCols());
-        Assert.assertEquals(table.getPartitionKeys(), table2.getPartitionKeys());
+        assertEquals(sd.getCols(), sd2.getCols());
+        assertEquals(table.getPartitionKeys(), table2.getPartitionKeys());
         Map<String, String> table2Parameters = table2.getParameters();
         table2Parameters.remove("transient_lastDdlTime");
         table2Parameters.remove("last_modified_time");
-        Assert.assertEquals(table.getParameters(), table2Parameters);
+        assertEquals(table.getParameters(), table2Parameters);
         PrincipalPrivilegeSet privilegeSet2 = table2.getPrivileges();
         // TODO: table2.getPrivileges() == null, not checked
-        // Assert.assertEquals(table.getPrivileges(), privilegeSet2);
-        Assert.assertEquals(table.isTemporary(), table2.isTemporary());
+        // assertEquals(table.getPrivileges(), privilegeSet2);
+        assertEquals(table.isTemporary(), table2.isTemporary());
         System.out.println("table.getCatName():" + table.getCatName());
         System.out.println("table2.getCatName():" + table2.getCatName());
-        // Assert.assertEquals(table.getCatName(), table2.getCatName());
-        Assert.assertEquals(table.getOwnerType(), table2.getOwnerType());
+        // assertEquals(table.getCatName(), table2.getCatName());
+        assertEquals(table.getOwnerType(), table2.getOwnerType());
     }
 
     protected void checkLocation(Table table) {
@@ -379,6 +378,6 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
             expectedLocation =  this.catalogLocation + "/" + table.getDbName() + ".db/" + table.getTableName();
         }
 
-        Assert.assertEquals(expectedLocation, location);
+        assertEquals(expectedLocation, location);
     }
 }

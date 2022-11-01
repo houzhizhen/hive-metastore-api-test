@@ -10,6 +10,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.tez.common.Preconditions;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
 import java.io.FileNotFoundException;
@@ -29,6 +30,8 @@ public class MetastoreAPITestBase {
     protected HiveConf conf;
     protected IMetaStoreClient client;
 
+    protected boolean logExceptionOnly;
+
     @Before
     public void init() throws MetaException, HiveException {
 
@@ -37,6 +40,7 @@ public class MetastoreAPITestBase {
         this.conf.set("hive.execution.engine", "mr");
         this.conf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
                 "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+        this.logExceptionOnly = conf.getBoolean("hive.metastore.test.logExceptionOnly", true);
         MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY,
                 HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.defaultBoolVal);
         logParameter(conf, HiveConf.ConfVars.HIVE_TXN_MANAGER.varname);
@@ -108,5 +112,52 @@ public class MetastoreAPITestBase {
             map.put(keyValuesPairs[i], keyValuesPairs[i+1]);
         }
         return map;
+    }
+
+    public void assertEquals(Object expected, Object actual) {
+        try {
+            Assert.assertEquals(null, expected, actual);
+        } catch (Throwable t) {
+            if (logExceptionOnly) {
+                t.printStackTrace();
+            } else {
+                throw t;
+            }
+        }
+    }
+
+    public void assertTrue(boolean condition) {
+        try {
+            Assert.assertTrue(condition);
+        } catch (Throwable t) {
+            if (logExceptionOnly) {
+                t.printStackTrace();
+            } else {
+                throw t;
+            }
+        }
+    }
+    public void assertFalse(boolean condition) {
+        try {
+            Assert.assertFalse(condition);
+        } catch (Throwable t) {
+            if (logExceptionOnly) {
+                t.printStackTrace();
+            } else {
+                throw t;
+            }
+        }
+    }
+
+    public void assertNull(Object object) {
+        try {
+            Assert.assertNull(object);
+        } catch (Throwable t) {
+            if (logExceptionOnly) {
+                t.printStackTrace();
+            } else {
+                throw t;
+            }
+        }
     }
 }
