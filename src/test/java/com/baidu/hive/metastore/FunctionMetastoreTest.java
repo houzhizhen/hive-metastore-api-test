@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
  */
 public class FunctionMetastoreTest extends DbMetastoreAPITest  {
 
-
     @Test
     public void testFunction() throws TException {
         log("begin testFunction");

@@ -1,5 +1,6 @@
 package com.baidu.hive.metastore;
 
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -120,6 +121,9 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
 
     protected void dropDatabase(String dbName, boolean ignoreUnknownDb) {
         try {
+            if (databaseExist(dbName)) {
+                clean(dbName);
+            }
             this.client.dropDatabase(dbName, true, ignoreUnknownDb, true);
         } catch (TException e) {
             if (!ignoreUnknownDb) {
@@ -132,6 +136,27 @@ public class DbMetastoreAPITest extends MetastoreAPITestBase {
         List<String> dbs = this.client.getAllDatabases();
         for (String dbName : dbArray) {
             assertTrue(dbs.contains(dbName));
+        }
+    }
+
+    private boolean databaseExist(String db) throws TException {
+        List<String> dbs = this.client.getAllDatabases();
+        return dbs.contains(db);
+    }
+
+    final void clean(String dbName) throws TException {
+        List<String> tables = client.getTables(dbName, "*");
+        for (String table : tables) {
+            System.out.println("drop table " + dbName + "." + table +
+                    " from DbMetastoreTest");
+            client.dropTable(dbName, table);
+        }
+
+        List<String> functions = client.getFunctions(dbName, "*");
+        for (String function : functions) {
+            System.out.println("drop function " + dbName + "." + function +
+                    " from DbMetastoreTest");
+            client.dropFunction(dbName, function);
         }
     }
 }
