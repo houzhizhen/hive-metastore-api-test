@@ -1,4 +1,4 @@
-set hivevar:version=3.1.0;
+set hivevar:version=3.1.3;
 create database if not exists table_test;
 use table_test;
 
@@ -113,6 +113,7 @@ create function  table_test.length_u as 'org.apache.hadoop.hive.ql.udf.generic.G
 using jar '${hiveconf:fs.defaultFS}/tmp/hive-exec-${hivevar:version}.jar';
 select table_test.length_u("abc");
 drop function table_test.length_u;
+! hadoop fs -rm /tmp/hive-exec-${hivevar:version}.jar;
 
 -- analyze table
 analyze table t1 compute statistics;
