@@ -1,5 +1,6 @@
 package com.baidu.hive.metastore;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
@@ -8,7 +9,6 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.tez.common.Preconditions;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
