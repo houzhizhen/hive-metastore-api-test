@@ -1,7 +1,12 @@
 package com.baidu.hive.metastore;
 
-public class AllMetastoreApiTest {
-    
+/**
+ * The difference of EdapMetatoreApiTest and AllMetastoreApiTest is:
+ * EdapMetatoreApiTest uses test.testEDAPTable();
+ * while AllMetastoreApiTest uses test.testTable();
+ */
+public class EdapMetastoreApiTest {
+
     public static void main(String[] args) {
         PartitionMetastoreApiTest test = new PartitionMetastoreApiTest();
         try {
@@ -23,11 +28,10 @@ public class AllMetastoreApiTest {
         }
 
         try {
-            test.testTable();
+            test.testEDAPTable();
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
         try {
             test.testPartitionTable();
         } catch (Throwable e) {

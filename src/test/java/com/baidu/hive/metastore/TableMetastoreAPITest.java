@@ -38,6 +38,36 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         log("end testTable");
     }
 
+    /**
+     * Exclude the column types edap does not support
+     * @throws TException
+     */
+    @Test
+    public void testEDAPTable() throws TException {
+        log("begin testTable");
+        // default database
+        dropTable("default", "t1", true);
+        createTableWithEdapSupportedColumnType("default", "t1", 1);
+        dropTable("default", "t1", false);
+
+        String dbName = "table_test";
+        dropDatabase(dbName, true);
+        createDatabase(dbName);
+
+        dropTable(dbName, "t1", true);
+        createTableWithEdapSupportedColumnType(dbName, "t1", 2000);
+        dropTable(dbName, "t1", false);
+
+        testShowTables(dbName);
+
+        testAlterTable(dbName);
+
+        testAlterColumns(dbName);
+        // TODO: testExteranlTable(dbName);
+        dropDatabase(dbName, false);
+        log("end testTable");
+    }
+
     protected void testAlterTable(String dbName) throws TException {
         String originalTableName = "original_name";
         String renamedTableName = "renamed_name";
@@ -72,7 +102,30 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         }
         return cols;
     }
-    
+
+    protected List<FieldSchema> genEdapCols(int columnCount) {
+        List<ColType> edapTypes = new ArrayList<>();
+        edapTypes.addAll(types);
+        edapTypes.removeAll(edapUnsuportedTypes);
+        List<FieldSchema> cols = new ArrayList<>();
+        for (int i = 0; i < columnCount; i++) {
+            FieldSchema field = new FieldSchema();
+            ColType colType = edapTypes.get(i % edapTypes.size());
+            field.setName("c" + i);
+            StringBuilder typeName = new StringBuilder(colType.typeName);
+            if (colType.hasPrecision) {
+                typeName.append("(").append(colType.precision);
+                if (colType.hasScale) {
+                    typeName.append(",").append(colType.scale);
+                }
+                typeName.append(")");
+            }
+            field.setType(typeName.toString());
+            cols.add(field);
+        }
+        return cols;
+    }
+
     public void testAlterColumns(String dbName) throws TException {
         String tableName = "tab_change_columns";
         this.dropTable(dbName, tableName, true);
@@ -121,6 +174,22 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
     protected static List<ColType> types = new ArrayList<>();
 
+    protected static List<ColType> edapUnsuportedTypes = new ArrayList<>();
+    static {
+        edapUnsuportedTypes.add(new ColType("tinyint"));
+        edapUnsuportedTypes.add(new ColType("smallint"));
+        edapUnsuportedTypes.add(new ColType("char", 10));
+        edapUnsuportedTypes.add(new ColType("varchar", 20));
+        edapUnsuportedTypes.add(new ColType("datetime"));
+        edapUnsuportedTypes.add(new ColType("interval_year_month"));
+        edapUnsuportedTypes.add(new ColType("interval_day_time"));
+        edapUnsuportedTypes.add(new ColType("timestamp with time zone"));
+        edapUnsuportedTypes.add(new ColType("map<string,string>"));
+        edapUnsuportedTypes.add(new ColType("array<string>"));
+        edapUnsuportedTypes.add(new ColType("struct<id:int,address:string>"));
+        edapUnsuportedTypes.add(new ColType("uniontype<int,double>"));
+    }
+
     static {
         types.add(new ColType("boolean"));
         types.add(new ColType("tinyint"));
@@ -133,15 +202,15 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         types.add(new ColType("varchar", 20));
         types.add(new ColType("string"));
         types.add(new ColType("date"));
-//        types.add(new ColType("datetime"));
+        types.add(new ColType("datetime"));
         types.add(new ColType("timestamp"));
         types.add(new ColType("decimal", 18, 2));
         types.add(new ColType("binary"));
-//        types.add(new ColType("interval_year_month"));
-//        types.add(new ColType("interval_day_time"));
-//        types.add(new ColType("timestamp with time zone"));
+        types.add(new ColType("interval_year_month"));
+        types.add(new ColType("interval_day_time"));
+        types.add(new ColType("timestamp with time zone"));
         types.add(new ColType("map<string,string>"));
-        // types.add(new CloumnType("list[string]"));
+        types.add(new ColType("array<string>"));
         types.add(new ColType("struct<id:int,address:string>"));
         types.add(new ColType("uniontype<int,double>"));
     }
@@ -178,28 +247,30 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
             this.hasScale = true;
             this.scale = scale;
         }
+
+        @Override
+        public int hashCode() {
+            return typeName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof ColType) {
+                ColType other = (ColType) o;
+                return this.typeName.equals(other.typeName) &&
+                        this.hasPrecision == other.hasPrecision &&
+                        this.hasScale == other.hasScale;
+            }
+            return false;
+        }
     }
 
-    @Test
-    public void testTypes() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("create table t22(");
-        for (int i = 0; i < types.size(); i++) {
-            ColType colType = types.get(i);
-            if (i != 0) {
-                sb.append(",");
-            }
-            sb.append("c").append(i).append(" ").append(colType.typeName);
-            if (colType.hasPrecision) {
-                sb.append("(").append(colType.precision);
-                if (colType.hasScale) {
-                    sb.append(",").append(colType.scale);
-                }
-                sb.append(")");
-            }
-        }
-        sb.append(")");
-        log(sb.toString());
+    protected void createTableWithEdapSupportedColumnType(String dbName, String tbName, int columnCount) throws TException {
+        Table table = this.createTableObject(dbName, tbName, columnCount);
+
+        table.getSd().setCols(genEdapCols(columnCount));
+        client.createTable(table);
+        checkTable(table, dbName, tbName);
     }
 
     protected void createTableWithVariousColumnType(String dbName, String tbName, int columnCount) throws TException {

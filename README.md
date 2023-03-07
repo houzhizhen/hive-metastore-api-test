@@ -23,7 +23,12 @@ mvn clean package  -DskipTests
 scp target/hive-metastore-api-test-0.1.0-tests.jar
 ```
 ### 2.3 在服务器上执行
-使用 hive 的配置文件 hive-site.xml
+使用 hive 的配置文件 hive-site.xml, AllMetastoreApiTest 使用所有 Hive 支持的数据类型。
 ```bash
- hive --service jar hive-metastore-api-test-0.1.0-tests.jar  com.baidu.hive.metastore.AllMetastoreApiTest
+hive --service jar hive-metastore-api-test-0.1.0-tests.jar  com.baidu.hive.metastore.AllMetastoreApiTest
+```
+
+使用 hive 的配置文件 hive-site.xml, EdapMetastoreApiTest 使用所有 Edap 支持的数据类型。
+```bash
+hive --service jar hive-metastore-api-test-0.1.0-tests.jar  com.baidu.hive.metastore.EdapMetastoreApiTest
 ```
