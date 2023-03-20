@@ -2,6 +2,14 @@ set hivevar:version=3.1.3;
 create database if not exists table_test;
 use table_test;
 
+create table bos(id int);
+insert into bos values(1);
+create view view_ext_1 as select * from bos;
+select * from view_ext_1;
+show create table view_ext_1;
+## CREATE VIEW `view_ext_1` AS select `bos`.`id` from `default`.`bos`
+
+
 drop table if exists t1;
 create table t1(c1 string) stored as textfile;
 load data local inpath '/etc/profile' overwrite into table t1;
