@@ -55,6 +55,14 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         createDatabase(dbName);
 
         dropTable(dbName, "t1", true);
+        createTableWithEdapSupportedColumnType(dbName, "t1", 20);
+        dropTable(dbName, "t1", false);
+
+        dropTable(dbName, "t1", true);
+        createTableWithEdapSupportedColumnType(dbName, "t1", 200);
+        dropTable(dbName, "t1", false);
+
+        dropTable(dbName, "t1", true);
         createTableWithEdapSupportedColumnType(dbName, "t1", 2000);
         dropTable(dbName, "t1", false);
 
@@ -269,6 +277,21 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         Table table = this.createTableObject(dbName, tbName, columnCount);
 
         table.getSd().setCols(genEdapCols(columnCount));
+        System.out.println("createTableWithEdapSupportedColumnType: " + table);
+        StringBuilder sb = new StringBuilder();
+        sb.append("create table ").append(table.getTableName()).append("(");
+        List<FieldSchema> fields = table.getSd().getCols();
+        boolean first = true;
+        for (FieldSchema field : fields) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(",");
+            }
+            sb.append(field.getName()).append(" ").append(field.getType()).append(" ");
+        }
+        sb.append(");");
+        System.out.println(sb);
         client.createTable(table);
         checkTable(table, dbName, tbName);
     }

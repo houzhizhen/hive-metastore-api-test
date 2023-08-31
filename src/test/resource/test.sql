@@ -11,7 +11,7 @@ drop table bos;
 
 select * from view_ext_1;
 show create table view_ext_1;
-drop table view_ext_1;
+drop view view_ext_1;
 
 
 drop table if exists t1;
@@ -55,6 +55,7 @@ price_adj_close FLOAT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 LOCATION '/data/t_tempory_stocks';
 
+drop table t_tempory_stocks;
 drop table if exists t2;
 create table t2 as select count(1)cnt, c1 from t1 group by c1;
 insert overwrite table t2 select count(1)cnt, c1 from t1 group by c1;

@@ -6,6 +6,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -21,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MetastoreAPITestBase {
@@ -124,6 +126,58 @@ public class MetastoreAPITestBase {
                 throw t;
             }
         }
+    }
+
+    public void assertEquals(Map<String, String> expected, Map<String, String> actual) {
+       expected.remove("EXTERNAL");
+       actual.remove("EXTERNAL");
+        try {
+            Assert.assertEquals(null, expected, actual);
+        } catch (Throwable t) {
+            if (logExceptionOnly) {
+                t.printStackTrace();
+            } else {
+                throw t;
+            }
+        }
+    }
+
+    public void assertEquals(List<FieldSchema> expected, List<FieldSchema> actual) {
+        try {
+            if (expected.size() != actual.size()) {
+                throw new RuntimeException(
+                        "expected.size():" + expected.size() + "," +
+                        "actual.size():" + actual.size());
+            }
+            for (FieldSchema schema : expected) {
+                boolean found = false;
+                for (FieldSchema actualSchema : actual) {
+                    if (schema.getName().equals(actualSchema.getName())) {
+                        assertEquals(schema.getType(), actualSchema.getType());
+                        assertEquals(ignoreNull(schema.getComment()),
+                                ignoreNull(actualSchema.getComment()));
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    throw new RuntimeException("Cannot found schema " + schema);
+                }
+            }
+        } catch (Throwable t) {
+            if (logExceptionOnly) {
+                t.printStackTrace();
+            } else {
+                throw t;
+            }
+        }
+    }
+
+    private String ignoreNull(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value;
     }
 
     public void assertTrue(boolean condition) {
