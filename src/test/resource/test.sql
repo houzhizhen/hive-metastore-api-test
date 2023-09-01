@@ -56,6 +56,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 LOCATION '/data/t_tempory_stocks';
 
 drop table t_tempory_stocks;
+
 drop table if exists t2;
 create table t2 as select count(1)cnt, c1 from t1 group by c1;
 insert overwrite table t2 select count(1)cnt, c1 from t1 group by c1;
@@ -71,6 +72,12 @@ insert overwrite table t3 partition(dt=20230101) select distinct(c1) from t1;
 insert overwrite table t3  select c1,length(c1) from t1 group by c1;
 SHOW PARTITIONS t3;
 drop table t3;
+
+create table t_p(c1 string) partitioned by (pt string) stored as textfile;
+load data local inpath '/etc/profile' overwrite into table t_p partition(pt='2022-01-01');
+show partitions t_p;
+alter table t_p drop partition (pt='2022-01-01');
+drop table t_p;
 
 create view v_t3 as select c1 from t1 where c1 <>4;
 select count(distinct c1) from v_t3;
