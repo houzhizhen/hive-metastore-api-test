@@ -184,17 +184,17 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
 
     protected static List<ColType> edapUnsuportedTypes = new ArrayList<>();
     static {
-        edapUnsuportedTypes.add(new ColType("tinyint"));
-        edapUnsuportedTypes.add(new ColType("smallint"));
-        edapUnsuportedTypes.add(new ColType("char", 10));
-        edapUnsuportedTypes.add(new ColType("varchar", 20));
+//        edapUnsuportedTypes.add(new ColType("tinyint"));
+//        edapUnsuportedTypes.add(new ColType("smallint"));
+//        edapUnsuportedTypes.add(new ColType("char", 10));
+//        edapUnsuportedTypes.add(new ColType("varchar", 20));
         edapUnsuportedTypes.add(new ColType("datetime"));
         edapUnsuportedTypes.add(new ColType("interval_year_month"));
         edapUnsuportedTypes.add(new ColType("interval_day_time"));
         edapUnsuportedTypes.add(new ColType("timestamp with time zone"));
-        edapUnsuportedTypes.add(new ColType("map<string,string>"));
-        edapUnsuportedTypes.add(new ColType("array<string>"));
-        edapUnsuportedTypes.add(new ColType("struct<id:int,address:string>"));
+//        edapUnsuportedTypes.add(new ColType("map<string,string>"));
+//        edapUnsuportedTypes.add(new ColType("array<string>"));
+//        edapUnsuportedTypes.add(new ColType("struct<id:int,address:string>"));
         edapUnsuportedTypes.add(new ColType("uniontype<int,double>"));
     }
 
@@ -221,6 +221,7 @@ public class TableMetastoreAPITest extends DbMetastoreAPITest {
         types.add(new ColType("array<string>"));
         types.add(new ColType("struct<id:int,address:string>"));
         types.add(new ColType("uniontype<int,double>"));
+        types.removeAll(edapUnsuportedTypes);
     }
 
     static class ColType {

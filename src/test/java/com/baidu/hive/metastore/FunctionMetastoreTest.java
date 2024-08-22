@@ -26,8 +26,6 @@ public class FunctionMetastoreTest extends DbMetastoreAPITest  {
         dropDatabase(dbName, true);
         createDatabase(dbName);
 
-
-
         List<Function> functions = testCreateFunctions(dbName, 10);
 
         testShowFunctions(dbName, functions);
